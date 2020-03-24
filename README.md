@@ -60,10 +60,20 @@ $ aws secretsmanager describe-secret --secret-id prod/mysecret
 }
 ```
 
-> Note that `aws-secret-operator` intentionally disallow omitting `VersionId` or specifying `VersionStage` as it makes you
-difficult to trigger updates to Pods in response to AWS secrets changes.
+> Note that `aws-secret-operator` intentionally disallow specifying `VersionStage` and allows `VersionId` instead. If you omit `VersionId` `aws-secret-operator` will update the local K8s secret with the AWSCURRENT version. This is in line with the documentation in the [GO AWS SDK](https://docs.aws.amazon.com/sdk-for-go/api/service/secretsmanager/#GetSecretValueInput) 
 >
-> Run a script like [update-aws-secret-ids](https://github.com/mumoshu/aws-secret-operator/blob/master/scripts/update-aws-secret-ids) in order to automate bumping VersionId in your configuration files.
+>
+```
+ // SecretId is a required field
+    SecretId *string `min:"1" type:"string" required:"true"`
+ // Specifies the unique identifier of the version of the secret that you want
+ // to retrieve. If you specify this parameter then don't specify VersionStage.
+ // If you don't specify either a VersionStage or VersionId then the default
+ // is to perform the operation on the version with the VersionStage value of
+ // AWSCURRENT.
+```
+>
+> If you insist in using a version id run a script like [update-aws-secret-ids](https://github.com/mumoshu/aws-secret-operator/blob/master/scripts/update-aws-secret-ids) in order to automate bumping VersionId in your configuration files.
 
 Create a custom resource `awssecret` named `example` that points the SecretsManager secret:
 
